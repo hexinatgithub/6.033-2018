@@ -1,0 +1,29 @@
+# 4.4 Case study: The Internet Domain Name System (DNS)
+
+The primary use for DNS is to associate user-friendly character-string names, called domain names, with machine-oriented binary identifiers for network attachment points, called Internet addresses. Domain names are hierarchically structured, the term domain being used in a general way in DNS: it is simply a set of one or more names that have the same hierarchical ancestor.
+
+    DNS allows both relative and absolute path names. Absolute path names are supposed to be distinguished by the presence of a trailing dot. In human interfaces the trailing dot rarely appears; instead, dns_resolve applies a simple form of multiple lookup. When presented with a relative path name, dns_resolve first tries appending a default context, supplied by a locally set configuration parameter. If the resulting extended name fails to resolve, dns_resolve tries again, this time appending just a trailing dot to the originally presented name. Thus, for example, if one presents dns_resolve with the apparently relative path name "[ginger.com](http://ginger.com/)", and the default context is "[pedantic.edu](http://pedantic.edu/).", dns_resolve will first try to resolve the absolute path name "[ginger.com.pedantic.edu](http://ginger.com.pedantic.edu/).". If that attempt leads to a not-found result, it will then try to resolve the absolute path name "[ginger.com](http://ginger.com/)."
+
+    With the distributed directory service model, the operation of every name server is the same: a server maintains a set of name records, each of which binds a domain name to an Internet address. When a client sends a request for a name resolution, the name server looks through the collection of domain names for which it is responsible, and if it finds a name record, it returns that record as its response. If it does not find the requested name, it looks through a separate set of referral records. Each referral record binds a hierarchical region of the DNS name space to some other name server that can help resolve names in that region of the naming hierarchy. Starting with the most significant component of the requested domain name, the server searches through referral records for the one that matches the most components, and it returns that referral record. If nothing matches, DNS cannot resolve the original name, so it returns a “no such domain” response.
+
+> The server that holds either a name record or a referral record for a domain name is known as the authoritative name server for that domain name.
+> 
+1. It is not actually necessary to send the initial request to the root name server. dns_resolve can send the request to any convenient name server whose Internet address it knows. The name server doesn’t care where the request came from; it simply compares the requested domain name with the list of domain names for which it is responsible in order to see if it holds a record that can help. If it does, it answers the request. If it doesn’t, it answers by returning a referral to a root name server.
+2. Some domain name servers offer what is (perhaps misleadingly) called recursive name service. If the name server does not hold a record for the requested name, rather than sending a referral response, the name server takes on the responsibility for resolving the name itself. It forwards the initial request to a root name server, then continues to follow the chain of responses to resolve the complete path name, and finally returns the desired name record to its client.
+3. Every name server is expected to maintain, in addition to its authoritative records, a cache of all name records it has heard about from other name servers. A server that provides recursive name service thus collects records that can greatly speed up future name resolution requests.
+
+    A cache holds a duplicate copy, which may go out of date if someone changes the authoritative name record. On the basis that changes of existing name bindings are relatively infrequent in the Domain Name System and that it is hard to keep track of all the caches to which a domain name record may have propagated, the DNS design does not call for explicit invalidation of changed entries. Instead, it uses expiration. That is, the naming authority for a DNS record marks each record that it sends out with an expiration period, which may range from seconds to months. A DNS cache manager is expected to discard entries that have passed their expiration period. The DNS cache manager provides a memory model that is called eventual consistency.
+
+## 4.4.3 Other Features of DNS
+
+> For the same reason that name servers need to be replicated, many network services also need to be replicated, so DNS allows the same name to be bound to several Internet addresses.
+> 
+
+> DNS also allows synonyms, in the form of indirect names.
+> 
+
+## 4.4.4 Name Discovery in DNS
+
+1. In order for dns_resolve to send a request to a name server, it needs to know the Internet address of that name server. dns_resolve finds this address in a configuration table. The most widely used approach is that when a computer first connects to a network it performs a name discovery broadcast to which the Internet service provider (ISP) responds by assigning the attacher an Internet address and also telling the attacher the Internet address of one or more name servers operated by or for the ISP.
+2. Name discovery involves domain names themselves. Typically, people learn of domain names via other network services, such as by e-mail, querying a search engine, reading postings in newsgroups or while surfing the Web, so the original direct communication may be long forgotten.
+3. The extension that is used for unqualified domain names. The default context used for extension is usually a configuration parameter of dns_resolve.
