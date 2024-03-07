@@ -1,4 +1,4 @@
-# Computer System Engineering
+# [Computer System Engineering](https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/pages/syllabus/)
 
 [Week 1: Operating Systems Part I](Computer%20System%20Engineering%2088307ff867014e4989b25d1c5b5769bc/Week%201%20Operating%20Systems%20Part%20I%209f5785e6604e49abb7f340f4d8b8b783.md)
 
